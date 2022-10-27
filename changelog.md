@@ -6,3 +6,7 @@ v0.0.1 Using Kivy for UI
 v0.0.2 Switch to Tkinter
 ========================
 - Better crossplatform and no kv file needed
+
+v0.0.3 Switched to CLI 
+==========================
+- I have given up

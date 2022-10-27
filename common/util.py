@@ -1,0 +1,78 @@
+import os
+import random
+
+
+def terminal_size():
+    try:
+        columns, lines = os.get_terminal_size()
+    except OSError:
+        # Inappropriate ioctl for device caused by running in simulated terminal
+        columns, lines = 80, 24
+    return columns, lines
+
+
+def print_header(message, sep='='):
+    """
+    Print a centered header message
+    :return:
+    """
+    columns, lines = terminal_size()
+    print(sep * columns)
+    print(message.center(columns))
+    print(sep * columns)
+
+
+def clear():
+    """Clear the terminal"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def options(options: dict, text="Select", instructions="Select an option"):
+    """Enumerate text value for options and print them, return the corresponding function"""
+    print(instructions)
+    temp = {}
+    print("0: Back")
+    for i, (key, value) in enumerate(options.items()):
+        temp[i + 1] = value
+        print(f"{i + 1}: {key}")
+
+    while True:
+        try:
+            selection = int(input(f"{text} (0-{len(options)}): "))
+            if selection == 0:
+                return
+
+            elif selection in range(len(options) + 1):
+                # Lookup the selection
+                return temp[selection]
+
+            else:
+                print("Invalid selection")
+        except ValueError:
+            print("Invalid selection")
+
+
+def module_loaded(text, sep='-'):
+    """
+    Clear the screen and print a centered header message
+    :param text:
+    :return:
+    """
+    clear()
+    print_header(text, sep=sep)
+
+
+def exit_quote():
+    """Print a random exit quote"""
+    quotes = [
+        "Huginn and Muninn hover each day The wide earth over; I fear for Huginn lest he fare not back,-- Yet watch I "
+        "more for Muninn.",
+        "The raven is a symbol of wisdom and knowledge. It is also a symbol of death and the afterlife.",
+        "Muninn is the name of Odin's raven. He is the one who brings Odin the news of the world.",
+        "Muninn means 'mind' or 'memory'.",
+        "Two ravens flew from Odin's shoulders; Huginn to the hanged and Muninn to the slain."]
+
+    clear()
+
+    print(f"\n{random.choice(quotes)}")
+    print_header("Goodbye", sep=' ')
