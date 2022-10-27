@@ -10,3 +10,9 @@ v0.0.2 Switch to Tkinter
 v0.0.3 Switched to CLI 
 ==========================
 - I have given up
+
+v0.0.4 CLI working scanner
+==========================
+- Standardized CLI
+- Working scanner
+- Common logic/flow between modules
