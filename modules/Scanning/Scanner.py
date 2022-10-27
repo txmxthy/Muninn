@@ -95,6 +95,9 @@ def print_scan(parsed):
 
         if host.is_up():
             # Get OS
+            if host.os_fingerprinted:
+                print("Host: {0} ({1})".format(tmp_host, host.os_match_probabilities()))
+
 
 
             print("\nHost {0}/{1} {2}.".format(tmp_host, host.address, host.status))

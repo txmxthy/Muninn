@@ -7,8 +7,6 @@ import os
 
 def run():
     if not eop.is_root():
-
-        # print_header("Please Run as Root. Required for scanner", " ")
         eop.root()
 
     while True:

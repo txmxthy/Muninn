@@ -21,3 +21,8 @@ v0.0.5 Elevation of Privileges
 ==========================
 - Added graphical EOP
 - Allows for elevation of privileges with venv kept
+
+v0.0.6 Host Fingerprinting
+==========================
+- Added host fingerprinting support
+- Detects when fingerprinting is used
