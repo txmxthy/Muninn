@@ -1,9 +1,16 @@
+from common import eop
 from common.util import *
 from modules import Database, Bots
 from modules.Scanning import Scan
+import os
 
 
 def run():
+    if not eop.is_root():
+
+        # print_header("Please Run as Root. Required for scanner", " ")
+        eop.root()
+
     while True:
         opts = {"Scanner": Scan.Controller, "Database": Database.Controller, "Bots": Bots.Controller}
         selection = options(opts, "Select")

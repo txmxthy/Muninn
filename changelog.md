@@ -16,3 +16,8 @@ v0.0.4 CLI working scanner
 - Standardized CLI
 - Working scanner
 - Common logic/flow between modules
+
+v0.0.5 Elevation of Privileges
+==========================
+- Added graphical EOP
+- Allows for elevation of privileges with venv kept

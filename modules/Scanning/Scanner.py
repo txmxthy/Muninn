@@ -1,32 +1,36 @@
+from datetime import datetime
+
 import nmap as nmap
 from time import sleep
 from tqdm import tqdm
-
+import fontawesome as fa
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 
+from common.util import print_header
+from common import eop
 
 # https://libnmap.readthedocs.io/en/latest/process.html
-
+# https://linux.die.net/man/1/nmap
 class Scanner:
-    def __init__(self, hosts="192.168.1.0/24", ports=None, args="-sV"):
+    def __init__(self, hosts="192.168.1.0/24", ports=None, args="-sV", safe_mode=True):
         if ports is None:
             ports = [1, 65535]
         self.hosts = hosts
         self.ports = ports
         self.args = args
+        self.safe_mode = safe_mode
         self.known_hosts = {}
-        self.current_command = ""
+        self.current_command = "nmap " + self.hosts + " " + self.format_args()
 
     def Configure(self):
-        print("Configure")
+        print("Configure " + fa.icons['cog'])
 
         # Ports
         # --top-ports: Top
         # --port-ratio: Ratio
         # -p: Range/List
 
-        self.current_command = "nmap " + self.hosts + " " + self.format_args()
         print("Current Command: " + self.current_command)
         self.hosts = input("Hosts: ")
         self.ports = input("Ports: ")
@@ -36,22 +40,26 @@ class Scanner:
 
     def Run(self):
         args = self.format_args()  # @TODO
+        print(fa.icons['spinner'] + " Running " + self.current_command)
+
+        nmproc = NmapProcess(targets=self.hosts, options=args, safe_mode=self.safe_mode)
 
 
-        nmproc = NmapProcess(targets=self.hosts, options=args)
 
-        nmproc.run_background()
-        progress = tqdm(total=100, desc="Scanning", unit="percent")
-        while nmproc.is_running():
-            progress.update(int(float(nmproc.progress) - progress.n))
-            progress.refresh()
-            sleep(2)
+        nmproc.sudo_run_background()
 
-        try:
-            parsed = NmapParser.parse(nmproc.stdout)
-            print_scan(parsed)
-        except NmapParserException as e:
-            print("Exception raised while parsing scan: {0}".format(e.msg))
+        if eop.is_root():
+            progress = tqdm(total=100, desc="Scanning", unit="percent")
+            while nmproc.is_running():
+                progress.update(int(float(nmproc.progress) - progress.n))
+                progress.refresh()
+                sleep(2)
+
+            try:
+                parsed = NmapParser.parse(nmproc.stdout)
+                print_scan(parsed)
+            except NmapParserException as e:
+                print("Exception raised while parsing scan: {0}".format(e.msg))
 
     def format_args(self):
         ports = format_ports(scanner=self)
@@ -71,9 +79,13 @@ def format_ports(scanner):
 
 
 def print_scan(parsed):
-    print("Starting Nmap {0} ( http://nmap.org ) at {1}".format(
+    print_header("Results", " ")
+    unix_timestamp = parsed.started
+    start = datetime.fromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+    print("Scan with Nmap {0} ( http://nmap.org )  at {1}".format(
         parsed.version,
-        parsed.started))
+        start))
 
     for host in parsed.hosts:
         if len(host.hostnames):
@@ -82,8 +94,11 @@ def print_scan(parsed):
             tmp_host = host.address
 
         if host.is_up():
-            print("Host {0}/{1} {2}.".format(tmp_host, host.address, host.status))
-            print("  PORT     STATE         SERVICE")
+            # Get OS
+
+
+            print("\nHost {0}/{1} {2}.".format(tmp_host, host.address, host.status))
+            print("   PORT    STATE         SERVICE")
 
             for serv in host.services:
                 pserv = "{0:>5s}/{1:3s}  {2:12s}  {3}".format(
@@ -95,5 +110,5 @@ def print_scan(parsed):
                     pserv += " ({0})".format(serv.banner)
                 print(pserv)
     print(parsed.summary)
-    #@TODO add to database or file or something
+    # @TODO add to database or file or something
     input("Press enter to continue")

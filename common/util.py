@@ -61,6 +61,23 @@ def module_loaded(text, sep='-'):
     clear()
     print_header(text, sep=sep)
 
+def vert_center(text):
+    """
+    Space text at the center of the terminal vertically and horizontally
+    :param text:
+    :return:
+    """
+
+    columns, lines = terminal_size()
+    print("\n" * (lines // 2))
+    text = text.splitlines()
+    for i, line in enumerate(text):
+        text[i] = line.center(columns)
+
+    text = "\n".join(text)
+    text = text.center(lines)
+    print(text)
+    print("\n" * (lines // 2))
 
 def exit_quote():
     """Print a random exit quote"""
