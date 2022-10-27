@@ -1,6 +1,6 @@
 from common.util import *
 from nmap import nmap
-from modules.Scanning.Scanner import Scanner
+from modules.Scan.Scanner import Scanner
 
 
 def Controller(scanner=None):

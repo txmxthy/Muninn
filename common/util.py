@@ -91,5 +91,5 @@ def exit_quote():
 
     clear()
 
-    print(f"\n{random.choice(quotes)}")
+    vert_center(f"\n{random.choice(quotes)}")
     print_header("Goodbye", sep=' ')

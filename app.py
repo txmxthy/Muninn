@@ -1,7 +1,8 @@
 from common import eop
 from common.util import *
-from modules import Database, Bots
-from modules.Scanning import Scan
+from modules.Database import Database
+from modules import Bots
+from modules.Scan import Scan
 import os
 
 

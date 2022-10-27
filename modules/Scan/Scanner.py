@@ -49,7 +49,7 @@ class Scanner:
         nmproc.sudo_run_background()
 
         if eop.is_root():
-            progress = tqdm(total=100, desc="Scanning", unit="percent")
+            progress = tqdm(total=100, desc="Scan", unit="percent")
             while nmproc.is_running():
                 progress.update(int(float(nmproc.progress) - progress.n))
                 progress.refresh()
