@@ -1,0 +1,8 @@
+
+v0.0.1 Using Kivy for UI
+========================
+- Added Kivy UI template
+
+v0.0.2 Switch to Tkinter
+========================
+- Better crossplatform and no kv file needed

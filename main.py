@@ -15,7 +15,7 @@ file contains the root widget.
 
 import kivy
 
-kivy.require('1.0.7')
+kivy.require('2.1.0')
 
 from kivy.app import App
 
