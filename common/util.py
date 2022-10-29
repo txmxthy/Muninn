@@ -11,7 +11,7 @@ def terminal_size():
     return columns, lines
 
 
-def print_header(message, sep='='):
+def print_header(message, sep='=', app=None):
     """
     Print a centered header message
     :return:
@@ -20,6 +20,9 @@ def print_header(message, sep='='):
     print(sep * columns)
     print(message.center(columns))
     print(sep * columns)
+    if app:
+        print(str(app).center(columns))
+        print(" " * columns)
 
 
 def clear():
@@ -52,17 +55,24 @@ def options(options: dict, text="Select", instructions="Select an option"):
             print("Invalid selection")
 
 
-def module_loaded(text, sep='-', status=None):
+def module_loaded(text, sep='-', app=None):
     """
     Clear the screen and print a centered header message
-    :param status:
+    :param app:
+    :param sep:
     :param text:
     :return:
     """
-    clear()
-    print_header(text, sep=sep)
-    if status:
-        print(f"Status: {status()}")
+
+    # if an app is given with debug mode, do not clear the screen
+    if app and app.debug:
+        print_header(text, sep=sep, app=app)
+
+    else:
+        clear()
+        print_header(text, sep=sep, app=app)
+
+
 
 
 def vert_center(text):

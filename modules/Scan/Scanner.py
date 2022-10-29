@@ -23,7 +23,7 @@ class Scanner:
         self.safe_mode = safe_mode
         self.current_command = "nmap " + self.hosts + " " + self.format_args()
 
-    def Configure(self):
+    def Configure(self, app):
         print("Configure " + fa.icons['cog'])
 
         # Ports
@@ -36,9 +36,11 @@ class Scanner:
         self.ports = input("Ports: ")
         self.args = input("Args: ")
         input("Press enter to continue")
-        return 1
+        app.flag = 1
+        return app
 
-    def Run(self):
+
+    def Run(self, app):
         args = self.format_args()  # @TODO
         print(fa.icons['spinner'] + " Running " + self.current_command)
 
@@ -58,9 +60,11 @@ class Scanner:
                 print_scan(parsed)
             except NmapParserException as e:
                 print("Exception raised while parsing scan: {0}".format(e.msg))
+        return app
 
     def format_args(self):
         ports = format_ports(scanner=self)
+
         return self.args + " " + ports
 
 
@@ -69,7 +73,7 @@ def format_ports(scanner):
         ports = str(scanner.ports[0]) + "-" + str(scanner.ports[1])
     # If more than two ports, set as a comma separated list
     elif len(scanner.ports) > 2:
-        ports = ",".join(scanner.ports)
+        ports = ",".join(str(x) for x in scanner.ports)
     # If only one port, set as a single port
     else:
         ports = str(scanner.ports[0])

@@ -26,3 +26,8 @@ v0.0.6 Host Fingerprinting
 ==========================
 - Added host fingerprinting support
 - Detects when fingerprinting is used
+
+v0.0.7 State management through app instance
+==========================
+- Added state management through app instance
+- Added error handling through state

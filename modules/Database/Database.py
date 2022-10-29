@@ -5,7 +5,7 @@ from common.util import *
 
 
 def controller(app, status):
-    module_loaded("Database")
+    module_loaded("Database", app)
     actions = {"Configure": Configure, "Run": Run, "Init": init}
     selection = options(actions, "Select", "Select an action")
     if not selection:
