@@ -41,7 +41,7 @@ class App:
         self.flag = None
         self.debug = False
         self.rpc = {"Client": None,
-                    "Manager": None,
+                    "Host": "127.0.0.1",
                     "Port": 55553,
                     "Pass": "yourpassword",
                     "SSL": "-S"}

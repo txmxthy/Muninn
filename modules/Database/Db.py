@@ -54,19 +54,48 @@ def init(app):
 
     def launch_db():
         os.system("systemctl start postgresql")
-        os.system("msfdb init")
+        os.system("msfdb init -a 127.0.0.1 -p 5433 ")
         os.system("msfdb start")
 
     # Load
     if app.rpc["Client"] is None:
-        launch_server(app)
-
-    app.rpc["Client"] = MsfRpcClient(app.rpc["Pass"],server="0.0.0.0", port=app.rpc["Port"])
+        use_ssl = False
+        if app.rpc["SSL"] is not None:
+            use_ssl = True
+        try:
+            print("Connecting to RPC server....")
+            app.rpc["Client"] = MsfRpcClient(password=app.rpc["Pass"],
+                                             server="0.0.0.0",
+                                             port=app.rpc["Port"],
+                                             ssl=use_ssl)
+        except Exception as e:
+            print("Error: Could not Connect to RPC server")
+            print("Attempting to start RPC Server...")
+            launch_server(app)
+            input("Launched: Press enter to proceed once the server is running...")
+            app.rpc["Client"] = MsfRpcClient(password=app.rpc["Pass"],
+                                             server="0.0.0.0",
+                                             port=app.rpc["Port"],
+                                             ssl=use_ssl)
+    # Print
 
     client: MsfRpcClient = app.rpc["Client"]
+    dbname = "msf"
+    dbhost = "127.0.0.1"
+    dbport = "5433"
+    dbpasswd = app.rpc["Pass"]
+    dbusr = "msf"
 
-    # List databases
+    db_cfg = [dbname, dbhost, dbport, dbpasswd, dbusr]
 
+    if 'db' not in client.db.status:
+        client.db.connect(
+            username=dbusr,
+            database=dbname,
+            host=dbhost,
+            port=dbport,
+            password=dbpasswd
+        )
 
     print(client.db.status)
 
