@@ -43,7 +43,7 @@ class App:
         self.rpc = {"Client": None,
                     "Manager": None,
                     "Port": 55553,
-                    "Pass": "YourPassword",
+                    "Pass": "yourpassword",
                     "SSL": "-S"}
 
     def __repr__(self):

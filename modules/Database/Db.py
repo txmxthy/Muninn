@@ -1,4 +1,6 @@
-from pymetasploit3.msfrpc import MsfRpcClient
+from time import sleep
+
+from pymetasploit3.msfrpc import MsfRpcClient, MsfRpcMethod
 from common.util import *
 from modules.Scan.Scanner import Scanner
 
@@ -44,31 +46,37 @@ def init(app):
     """
 
     def launch_server(app):
-        os.system(f"msfrpcd -P {app.rpc['Pass']} {app.rpc['SSL']} -p {app.rpc['Port']}")
+
+        command = f"msfrpcd -P {app.rpc['Pass']} -p {app.rpc['Port']}"
+        print("Running", command)
+        launch_db()
+        os.system(command)
 
     def launch_db():
         os.system("systemctl start postgresql")
-        os.system("msfdb init -n")
+        os.system("msfdb init")
+        os.system("msfdb start")
 
     # Load
     if app.rpc["Client"] is None:
-        try:
-            print("Connecting to RPC server....")
-            app.rpc["Client"] = MsfRpcClient(app.rpc["Pass"], port=app.rpc["Port"], ssl=app.rpc["SSL"])
-            app.rpc["Manager"] = app.rpc["Client"].consoles.console()
-            app.db_status = True
-        except Exception as e:
-            print("Error: Could not Connect to RPC server")
-            print("Attempting to start RPC Server...")
-            launch_server(app)
-            input("Launched: Press enter to proceed once the server is running...")
-            app.rpc["Client"] = MsfRpcClient(app.rpc["Pass"], port=app.rpc["Port"], ssl=app.rpc["SSL"])
-    # Print
+        launch_server(app)
+
+    app.rpc["Client"] = MsfRpcClient(app.rpc["Pass"],server="0.0.0.0", port=app.rpc["Port"])
 
     client: MsfRpcClient = app.rpc["Client"]
-    client.db.connect('msf', "yourpassword")
 
-    print("Connected to DB")
+    # List databases
+
+
+    print(client.db.status)
+
+    # Create default workspace
+    client.call(MsfRpcMethod.DbAddWorkspace, "TEST")
+    # workspace_list = client.db.workspaces.add("TEST")
+    workspace_list = client.call(MsfRpcMethod.DbWorkspaces)
+    print("LIST ", workspace_list)
+
+
     input("Press enter to continue")
 
     return app
@@ -76,7 +84,7 @@ def init(app):
 def add_host(app):
     client: MsfRpcClient = app.rpc["Client"]
     client.db.workspaces.workspace('default').hosts.report(host='1.1.1.2')
-    hosts = client.db.workspaces.workspace('default').hosts.list
+    hosts = client.db.workspaces.workspace.hosts.list
     host_found = False
     for d in hosts:
         if d['address'] == '1.1.1.2':
