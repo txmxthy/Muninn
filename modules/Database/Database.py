@@ -4,7 +4,7 @@ import subprocess
 from common.util import *
 
 
-def Controller():
+def controller(app, status):
     module_loaded("Database")
     actions = {"Configure": Configure, "Run": Run, "Init": init}
     selection = options(actions, "Select", "Select an action")
@@ -43,7 +43,7 @@ def init():
     # Run command
 
     # Spawn a new gnome shell
-    msf = subprocess.Popen(['gnome-terminal', '-e', 'msfconsole -q -x "load msgrpc Pass=yourpassword"'])
+    # msf = subprocess.Popen(['gnome-terminal', '-e', 'msfconsole -q -x "load msgrpc Pass=yourpassword"'])
 
 
     input("Press enter to continue")

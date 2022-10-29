@@ -52,14 +52,18 @@ def options(options: dict, text="Select", instructions="Select an option"):
             print("Invalid selection")
 
 
-def module_loaded(text, sep='-'):
+def module_loaded(text, sep='-', status=None):
     """
     Clear the screen and print a centered header message
+    :param status:
     :param text:
     :return:
     """
     clear()
     print_header(text, sep=sep)
+    if status:
+        print(f"Status: {status()}")
+
 
 def vert_center(text):
     """

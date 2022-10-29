@@ -11,4 +11,5 @@ if __name__ == '__main__':
     else:
         module_loaded("Welcome to Muninn", sep="=")
 
-    app.run()
+    app = app.App(db=False).run()
+

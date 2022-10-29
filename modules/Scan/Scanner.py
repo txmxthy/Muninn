@@ -10,6 +10,7 @@ from libnmap.parser import NmapParser, NmapParserException
 from common.util import print_header
 from common import eop
 
+
 # https://libnmap.readthedocs.io/en/latest/process.html
 # https://linux.die.net/man/1/nmap
 class Scanner:
@@ -20,7 +21,6 @@ class Scanner:
         self.ports = ports
         self.args = args
         self.safe_mode = safe_mode
-        self.known_hosts = {}
         self.current_command = "nmap " + self.hosts + " " + self.format_args()
 
     def Configure(self):
@@ -43,8 +43,6 @@ class Scanner:
         print(fa.icons['spinner'] + " Running " + self.current_command)
 
         nmproc = NmapProcess(targets=self.hosts, options=args, safe_mode=self.safe_mode)
-
-
 
         nmproc.sudo_run_background()
 
@@ -97,8 +95,6 @@ def print_scan(parsed):
             # Get OS
             if host.os_fingerprinted:
                 print("Host: {0} ({1})".format(tmp_host, host.os_match_probabilities()))
-
-
 
             print("\nHost {0}/{1} {2}.".format(tmp_host, host.address, host.status))
             print("   PORT    STATE         SERVICE")

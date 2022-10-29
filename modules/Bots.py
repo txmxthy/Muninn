@@ -1,7 +1,7 @@
 from common.util import *
 
 
-def Controller():
+def controller(app):
     module_loaded("Bots")
     actions = {"Configure": Configure, "Run": Run}
     selection = options(actions, "Select", "Select an action")
