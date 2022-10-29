@@ -2,7 +2,7 @@ from common.util import *
 
 
 def controller(app):
-    module_loaded("Bots", app)
+    module_loaded("Bots", app=app)
     actions = {"Configure": Configure, "Run": Run}
     selection = options(actions, "Select", "Select an action")
     if not selection:

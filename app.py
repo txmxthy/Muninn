@@ -2,6 +2,7 @@ from common import eop
 from common.util import *
 from modules.Database import Database
 from modules import Bots
+from modules.Database.Database import check_db_service, poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
 import os
@@ -23,6 +24,9 @@ def handle_error(app):
         print("Dumping Fields")
         for field in app.__dict__:
             print(fa.icons["arrow-right"] + " " + field + ": " + str(app.__dict__[field]))
+    if input("Scan for db? (y/n): ").lower() == "y":
+        print("If there is no client then we cannot connect even if the service is running")
+        check_db_service(app)
 
     app.error = None
     print("Clearing Error...")
@@ -37,18 +41,24 @@ class App:
         self.error = None
         self.flag = None
         self.debug = False
+        self.rpc = {"Client": None,
+                    "Manager": None,
+                    "Port": 55553,
+                    "Pass": "YourPassword",
+                    "SSL": "-S"}
 
     def __repr__(self):
-        db_status = "DB: " + ("ON" if self.db_status else "OFF")
-        return f"{db_status} | Err: {self.error}"
+        self.db_status = poll_db_status(self)
+        db_status = "DB: " + (fa.icons["check"] if self.db_status else fa.icons["times"])
+        error = "Status: " + (fa.icons["thumbs-down"] if self.db_status else fa.icons["thumbs-up"])
+        debug = (" | " + fa.icons["bug"] if self.debug else "")
+        return f"{db_status} | {error} {debug}"
 
     def __str__(self):
         return self.__repr__()
 
     def toggle_debug(self, _):
-        self.debug = not self.debug
-        print(f"Debug Mode: {self.debug}")
-        input("Press enter to continue...")
+        self.update(debug=not self.debug)
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
@@ -68,12 +78,12 @@ class App:
             selection = options(opts, "Select")
             if not selection:
                 break
-            selection(self)
-            # try:
-            #     selection(self)
-            # except Exception as e:
-            #     self.update(error=e)
-            #     handle_error(app=self)
-            clear()
-            print_header(fa.icons["eye"] + " Muninn", app=self)
+
+            try:
+                selection(self)
+            except Exception as e:
+                self.update(error=e)
+                handle_error(app=self)
+
+            module_loaded(fa.icons["eye"] + " Muninn", app=self)
         exit_quote()

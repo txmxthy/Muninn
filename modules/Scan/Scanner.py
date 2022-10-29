@@ -7,7 +7,7 @@ import fontawesome as fa
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 
-from common.util import print_header
+from common.util import *
 from common import eop
 
 
@@ -24,7 +24,7 @@ class Scanner:
         self.current_command = "nmap " + self.hosts + " " + self.format_args()
 
     def Configure(self, app):
-        print("Configure " + fa.icons['cog'])
+        module_loaded("Configure " + fa.icons['cog'], app=app)
 
         # Ports
         # --top-ports: Top
@@ -35,12 +35,18 @@ class Scanner:
         self.hosts = input("Hosts: ")
         self.ports = input("Ports: ")
         self.args = input("Args: ")
+
+        self.current_command = "nmap " + self.hosts + " " + self.format_args()
+        print("New Command: " + self.current_command)
         input("Press enter to continue")
         app.flag = 1
         return app
 
-
     def Run(self, app):
+
+        if not app.db_status:
+            warn("Database is not running!")
+
         args = self.format_args()  # @TODO
         print(fa.icons['spinner'] + " Running " + self.current_command)
 
@@ -53,7 +59,7 @@ class Scanner:
             while nmproc.is_running():
                 progress.update(int(float(nmproc.progress) - progress.n))
                 progress.refresh()
-                sleep(2)
+                sleep(1)
 
             try:
                 parsed = NmapParser.parse(nmproc.stdout)
@@ -69,15 +75,25 @@ class Scanner:
 
 
 def format_ports(scanner):
-    if len(scanner.ports) == 2:
-        ports = str(scanner.ports[0]) + "-" + str(scanner.ports[1])
-    # If more than two ports, set as a comma separated list
-    elif len(scanner.ports) > 2:
+    # Split on comma or hyphen
+
+    ports = scanner.ports
+
+    if isinstance(ports, str):
+        if "-" in ports:
+            ports = ports.split("-")
+            return "-p " + ports[0] + "-" + ports[1]
+        elif "," in ports:
+            ports = ports.split(",")
+            return "-p " + ",".join(ports)
+        else:
+            raise ValueError("Invalid port format")
+    elif isinstance(ports, int):
+        return "-p " + str(ports)
+    elif isinstance(ports, list):
         ports = ",".join(str(x) for x in scanner.ports)
-    # If only one port, set as a single port
-    else:
-        ports = str(scanner.ports[0])
-    return "-p " + ports
+        return "-p " + ports
+
 
 
 def print_scan(parsed):

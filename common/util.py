@@ -1,5 +1,6 @@
 import os
 import random
+import fontawesome as fa
 
 
 def terminal_size():
@@ -66,6 +67,7 @@ def module_loaded(text, sep='-', app=None):
 
     # if an app is given with debug mode, do not clear the screen
     if app and app.debug:
+        print_header("Clear Disabled on Debug Mode", "")
         print_header(text, sep=sep, app=app)
 
     else:
@@ -92,6 +94,15 @@ def vert_center(text):
     text = text.center(lines)
     print(text)
     print("\n" * (lines // 2))
+
+
+def warn(text, centered=True):
+    """Print a warning message"""
+    text = f"{fa.icons['exclamation-triangle']} {text}"
+    if centered:
+        print_header(text, sep=' ')
+    else:
+        print(text)
 
 def exit_quote():
     """Print a random exit quote"""
