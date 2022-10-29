@@ -1,0 +1,42 @@
+# def run_module_with_output(self, mod, payload=None, run_as_job=False):
+#     options_str = 'use {}/{}\n'.format(mod.moduletype, mod.modulename)
+#     if self.rpc.consoles.console(self.cid).is_busy():
+#         raise MsfError('Console {} is busy'.format(self.cid))
+#     self.rpc.consoles.console(self.cid).read()  # clear data buffer
+#     opts = mod.runoptions
+#     if payload is None:
+#         opts['DisablePayloadHandler'] = True
+#
+#     # Set payload params
+#     if mod.moduletype == 'exploit':
+#         opts['TARGET'] = mod.target
+#         if 'DisablePayloadHandler' in opts and opts['DisablePayloadHandler']:
+#             pass
+#         elif isinstance(payload, PayloadModule):
+#             if payload.modulename not in mod.payloads:
+#                 raise ValueError(
+#                     'Invalid payload ({}) for given target ({}).'.format(payload.modulename, mod.target))
+#
+#             options_str += 'set payload {}\n'.format(payload.modulename)
+#             for k, v in payload.runoptions.items():
+#                 if v is None or (isinstance(v, str) and not v):
+#                     continue
+#                 options_str += 'set {} {}\n'.format(k, v)
+#         else:
+#             raise ValueError('No valid PayloadModule provided for exploit execution.')
+#
+#     # Set module params
+#     for k in opts.keys():
+#         options_str += 'set {} {}\n'.format(k, opts[k])
+#
+#     # Run the module without directly opening a command line
+#     options_str += 'run -z'
+#     if run_as_job:
+#         options_str += " -j"
+#     print(options_str)
+#     self.rpc.consoles.console(self.cid).write(options_str)
+#     data = ''
+#     while data == '' or self.rpc.consoles.console(self.cid).is_busy():
+#         time.sleep(1)
+#         data += self.rpc.consoles.console(self.cid).read()['data']
+#     return data

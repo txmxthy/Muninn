@@ -2,7 +2,7 @@ from common import eop
 from common.util import *
 from modules.Database import Database
 from modules import Bots
-from modules.Database.Database import check_db_service, poll_db_status
+from modules.Database.Db import check_db_service, poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
 import os
@@ -14,8 +14,7 @@ def handle_error(app):
     :param app:
     :return:
     """
-    module_loaded("Caught Error!")
-    print("Caught Error!")
+    module_loaded("Caught Error!", app=app)
     print_header(str(app.error), sep=" ")
     app.error = "Caught"
 
@@ -50,7 +49,7 @@ class App:
     def __repr__(self):
         self.db_status = poll_db_status(self)
         db_status = "DB: " + (fa.icons["check"] if self.db_status else fa.icons["times"])
-        error = "Status: " + (fa.icons["thumbs-down"] if self.db_status else fa.icons["thumbs-up"])
+        error = "Status: " + (fa.icons["thumbs-down"] if self.error else fa.icons["thumbs-up"])
         debug = (" | " + fa.icons["bug"] if self.debug else "")
         return f"{db_status} | {error} {debug}"
 
@@ -70,7 +69,8 @@ class App:
             eop.root()
 
         while True:
-            opts = {"Scanner": Scan.controller,
+            opts = {"Auto Setup": auto_setup,
+                    "Scanner": Scan.controller,
                     "Database": Database.controller,
                     "Bots": Bots.controller,
                     "Toggle Debug": self.toggle_debug,
@@ -81,9 +81,21 @@ class App:
 
             try:
                 selection(self)
+                if self.error:
+                    handle_error(self)
             except Exception as e:
                 self.update(error=e)
                 handle_error(app=self)
 
             module_loaded(fa.icons["eye"] + " Muninn", app=self)
         exit_quote()
+
+
+def auto_setup(app):
+    """
+    Auto setup
+    :return:
+    """
+    print("Auto setup")
+    Database.Db.init(app)
+    return app

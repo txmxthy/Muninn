@@ -118,3 +118,4 @@ def exit_quote():
 
     vert_center(f"\n{random.choice(quotes)}")
     print_header("Goodbye", sep=' ')
+
