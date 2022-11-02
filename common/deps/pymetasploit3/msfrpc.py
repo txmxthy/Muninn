@@ -8,7 +8,7 @@ import time
 import re
 import random
 import msgpack
-import requests.packages.urllib3
+import urllib3
 from retry import retry
 requests.packages.urllib3.disable_warnings()
 
@@ -211,8 +211,10 @@ class MsfRpcClient(object):
 
         if self.ssl is True:
             url = "https://%s:%s%s" % (self.host, self.port, self.uri)
+
         else:
             url = "http://%s:%s%s" % (self.host, self.port, self.uri)
+
 
         opts.insert(0, method)
         payload = encode(opts)
@@ -223,8 +225,10 @@ class MsfRpcClient(object):
 
         if is_raw:
             return r.content
+        msg = convert(decode(r.content), self.encoding)
 
-        return convert(decode(r.content), self.encoding)  # convert all keys/vals to utf8
+
+        return msg  # convert all keys/vals to utf8
 
     @retry(tries=3, delay=1, backoff=2)
     def post_request(self, url, payload):
@@ -1003,6 +1007,7 @@ class DbManager(MsfManager):
         """
         runopts = {'username': username, 'database': database}
         runopts.update(kwargs)
+
         res = self.rpc.call(MsfRpcMethod.DbConnect, [runopts])
         return res['result'] == 'success'
 

@@ -1,140 +1,135 @@
-from time import sleep
+import os
 
-from pymetasploit3.msfrpc import MsfRpcClient, MsfRpcMethod
-from common.util import *
-from modules.Scan.Scanner import Scanner
-
-
-def check_db_service(app):
-    """
-    Hard check with scanner through localhost
-    :param app:
-    :return:
-    """
-    os.system("msfdb")
+from common.deps.pymetasploit3.msfrpc import MsfRpcClient, MsfRpcMethod
+import subprocess
+import time
 
 
 def poll_db_status(app):
     if app.rpc["Client"] is not None:
-        if app.rpc["Client"].db.status:
+        if "db" in app.rpc["Client"].db.status:
             return True
     return False
 
 
-def can_access_server(app):
-    if not poll_db_status(app):
-        app.error("Database not connected")
-        print("Database not connected")
+def connect_to_msf(start_time, max_time, app, depth=0):
+    try:
+        client = MsfRpcClient(app.rpc["Pass"], port=int(app.rpc["Port"]))
 
-    elif app.rpc["Client"] is None:
-        app.error("Client not configured")
-        print("Client not configured")
-    input("Press enter to continue")
+    except Exception:
+        if start_time + max_time > time.time():
+            print("waiting for msfrpcd to start")
+            time.sleep(5)
+            return connect_to_msf(start_time, max_time, app=app, depth=depth + 1)
+        else:
+            raise TimeoutError("Could not connect to msfrpcd")
+    return client
+
+
+def client_status(client):
+    print("Creating console")
+    client.call(MsfRpcMethod.ConsoleCreate)
+    print("\t" + "Console created")
+    print("\t" + "Console id:", client.call(MsfRpcMethod.ConsoleList))
+
+
+def connect_client(app):
+    print("Client Connecting")
+    try:
+        client = MsfRpcClient(app.rpc["Pass"], port=int(app.rpc["Port"]))
+
+    except:
+        print("Starting msfrpcd")
+
+        p = subprocess.Popen(["msfrpcd",
+                              "-P", app.rpc["Pass"],
+                              "-U", app.rpc["User"],
+                              "-S", "-f",
+                              "-p", app.rpc["Port"],
+                              "-a", app.rpc["Host"]],
+                             stdout=subprocess.PIPE)
+
+        print("Polled:", p.poll())
+        client = connect_to_msf(time.time(), 60, app=app)
+        print("Polled:", p.poll())
+    return client
+
+def connect(app):
+    app.rpc["Client"].db.connect(username=app.db["DbUser"],
+                                 database=app.db["DbName"],
+                                 host=app.db["DbHost"],
+                                 port=app.db["DbPort"],
+                                 password=app.db["DbPass"])
+    return app
+def connect_db(app):
+    print("Setting up DB connection. This Takes a while.")
+
+    if "db" not in app.rpc["Client"].db.status:
+        # Get current file path
+        path = os.path.dirname(os.path.abspath(__file__))
+        script = os.path.join(path, "msfdb.sh")
+        # Run script
+        os.system(script)
+
+
+    # Check cfg of server
+    # os.system("cat /usr/share/metasploit-framework/config/database.yml")
+    # Read password field from /usr/share/metasploit-framework/config/database.yml and set it to app.rpc["DbPass"]
+    # file = "/usr/share/metasploit-framework/config/database.yml"
+    file = "/home/kali/.msf4/database.yml"
+    # Read
+    with open(file, "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if "database" in line:
+                app.db["DbName"] = line.split(": ")[1].strip()
+            if "username" in line:
+                app.db["DbUser"] = line.split(": ")[1].strip()
+            if "password:" in line:
+                app.db["DbPass"] = line.split(": ")[1].strip()
+            if "host" in line:
+                app.db["DbHost"] = line.split(": ")[1].strip()
+            if "port" in line:
+                app.db["DbPort"] = line.split(": ")[1].strip()
+            if "pool" in line:
+                break
+
+    #
+    print("CFG:", app.db)
+    if "db" not in app.rpc["Client"].db.status:
+        print("Launching DB")
+        try:
+            app = connect(app)
+            if "db" not in app.rpc["Client"].db.status:
+
+
+                newPort = int(app.db["DbPort"]) + 1
+                print("Port doesn't match config, retrying with port:", newPort)
+                print("Check against service and override if needed")
+                os.system("ps aux | grep msf4")
+                override = input("Input a port to override the new port if needed:")
+                if override != "":
+                    newPort = override
+                app.db["DbPort"] = newPort
+                app = connect(app)
+            print(app.rpc["Client"].db.status)
+        except Exception as e:
+            app.error = e
+            return app
+
+
+        input("Press enter to continue")
 
     return app
-
-
-def check_msf_net_service(app):
-    scanner = Scanner(hosts="127.0.0.1", ports=[app.rpc["Port"]], args="-sV -O")
-    scanner.Run(app)
 
 
 def init(app):
-    """
-    Run the rpc server
-    :return:
-    """
+    app.rpc["Client"] = connect_client(app)
+    client_status(app.rpc["Client"])
+    print("Client Connected")
 
-    def launch_server(app):
-
-        command = f"msfrpcd -P {app.rpc['Pass']} -p {app.rpc['Port']}"
-        print("Running", command)
-        launch_db()
-        os.system(command)
-
-    def launch_db():
-        os.system("systemctl start postgresql")
-        os.system("msfdb init -a 127.0.0.1 -p 5433 ")
-        os.system("msfdb start")
-
-    # Load
-    if app.rpc["Client"] is None:
-        use_ssl = False
-        if app.rpc["SSL"] is not None:
-            use_ssl = True
-        try:
-            print("Connecting to RPC server....")
-            app.rpc["Client"] = MsfRpcClient(password=app.rpc["Pass"],
-                                             server="0.0.0.0",
-                                             port=app.rpc["Port"],
-                                             ssl=use_ssl)
-        except Exception as e:
-            print("Error: Could not Connect to RPC server")
-            print("Attempting to start RPC Server...")
-            launch_server(app)
-            input("Launched: Press enter to proceed once the server is running...")
-            app.rpc["Client"] = MsfRpcClient(password=app.rpc["Pass"],
-                                             server="0.0.0.0",
-                                             port=app.rpc["Port"],
-                                             ssl=use_ssl)
-    # Print
-
-    client: MsfRpcClient = app.rpc["Client"]
-    dbname = "msf"
-    dbhost = "127.0.0.1"
-    dbport = "5433"
-    dbpasswd = app.rpc["Pass"]
-    dbusr = "msf"
-
-    db_cfg = [dbname, dbhost, dbport, dbpasswd, dbusr]
-
-    if 'db' not in client.db.status:
-        client.db.connect(
-            username=dbusr,
-            database=dbname,
-            host=dbhost,
-            port=dbport,
-            password=dbpasswd
-        )
-
-    print(client.db.status)
-
-    # Create default workspace
-    client.call(MsfRpcMethod.DbAddWorkspace, "TEST")
-    # workspace_list = client.db.workspaces.add("TEST")
-    workspace_list = client.call(MsfRpcMethod.DbWorkspaces)
-    print("LIST ", workspace_list)
-
-
-    input("Press enter to continue")
+    app = connect_db(app)
+    print(app.rpc["Client"].db.workspaces.list)
+    print(app.rpc["Client"].sessions.list)
 
     return app
-
-def add_host(app):
-    client: MsfRpcClient = app.rpc["Client"]
-    client.db.workspaces.workspace('default').hosts.report(host='1.1.1.2')
-    hosts = client.db.workspaces.workspace.hosts.list
-    host_found = False
-    for d in hosts:
-        if d['address'] == '1.1.1.2':
-            host_found = True
-            break
-    assert host_found == True
-
-
-def list_hosts(app):
-    """
-    List all hosts in the database
-    :return:
-    """
-    can_access_server(app)
-    if app.error:
-        return app
-
-
-    workspace = "default"
-    client: MsfRpcClient = app.rpc["Client"]
-    workspace_hosts = client.db.workspaces.add("TEST")
-    print_header(f"Workspace: {workspace} Hosts", sep=" ")
-    for host in workspace_hosts:
-        print(fa.icons["server"] + " " + host["address"])

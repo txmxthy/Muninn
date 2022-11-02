@@ -2,7 +2,7 @@ from common import eop
 from common.util import *
 from modules.Database import Database
 from modules import Bots
-from modules.Database.Db import check_db_service, poll_db_status
+from modules.Database.Db import poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
 import os
@@ -23,9 +23,7 @@ def handle_error(app):
         print("Dumping Fields")
         for field in app.__dict__:
             print(fa.icons["arrow-right"] + " " + field + ": " + str(app.__dict__[field]))
-    if input("Scan for db? (y/n): ").lower() == "y":
-        print("If there is no client then we cannot connect even if the service is running")
-        check_db_service(app)
+
 
     app.error = None
     print("Clearing Error...")
@@ -42,9 +40,11 @@ class App:
         self.debug = False
         self.rpc = {"Client": None,
                     "Host": "127.0.0.1",
-                    "Port": 55553,
+                    "Port": "55553",
                     "Pass": "yourpassword",
-                    "SSL": "-S"}
+                    "User": "msf",
+                    }
+        self.db = {}
 
     def __repr__(self):
         self.db_status = poll_db_status(self)
@@ -66,6 +66,7 @@ class App:
 
     def run(self):
         if not self.root:
+            vert_center("Please run as root")
             eop.root()
 
         while True:
