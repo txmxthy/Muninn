@@ -2,7 +2,7 @@
 
 import pytest
 import os
-from pymetasploit3.msfrpc import *
+from common.deps.pymetasploit3.msfrpc import *
 
 
 @pytest.fixture()

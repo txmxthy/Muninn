@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from numbers import Number
-from pymetasploit3.utils import *
+from common.deps.pymetasploit3.utils import *
 import requests
 import uuid
 import time

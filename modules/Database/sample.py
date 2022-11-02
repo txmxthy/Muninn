@@ -1,6 +1,6 @@
 from time import sleep
 
-from pymetasploit3.msfrpc import MsfRpcClient, MsfRpcMethod
+fromcommon.deps.pymetasploit3.msfrpc import MsfRpcClient, MsfRpcMethod
 from common.util import *
 from modules.Scan.Scanner import Scanner
 

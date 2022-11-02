@@ -6,7 +6,7 @@ from modules.Scan.Scanner import Scanner
 def controller(app, scanner=None):
     if scanner is None:
         module_loaded("New Scan", app=app)
-        scanner = Scanner(hosts="127.0.0.1", ports=[22, 80, 443, 55553], args="-sV -O")
+        scanner = Scanner(hosts="192.168.86.66", args="-sV -O --osscan-limit --osscan-guess -F")
         print("Default Command: " + scanner.current_command)
     else:
         module_loaded("Scan", app=app)

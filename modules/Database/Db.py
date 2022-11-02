@@ -116,8 +116,6 @@ def connect_db(app):
             app.error = e
             return app
 
-        input("Press enter to continue")
-
     return app
 
 

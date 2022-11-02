@@ -6,6 +6,10 @@ from tqdm import tqdm
 import fontawesome as fa
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
+from libnmap.objects import NmapHost, NmapService
+
+from modules.Database.Db import poll_db_status
+from modules.Database.manager import *
 
 from common.util import *
 from common import eop
@@ -15,8 +19,6 @@ from common import eop
 # https://linux.die.net/man/1/nmap
 class Scanner:
     def __init__(self, hosts="192.168.1.0/24", ports=None, args="-sV", safe_mode=True):
-        if ports is None:
-            ports = [1, 65535]
         self.hosts = hosts
         self.ports = ports
         self.args = args
@@ -32,9 +34,9 @@ class Scanner:
         # -p: Range/List
 
         print("Current Command: " + self.current_command)
-        self.hosts = input("Hosts: ")
-        self.ports = input("Ports: ")
-        self.args = input("Args: ")
+        self.hosts = input("Hosts: ") or self.hosts
+        self.ports = input("Ports: ") or self.ports
+        self.args = input("Args: ") or self.args
 
         self.current_command = "nmap " + self.hosts + " " + self.format_args()
         print("New Command: " + self.current_command)
@@ -63,16 +65,17 @@ class Scanner:
 
             try:
                 parsed = NmapParser.parse(nmproc.stdout)
-                print_scan(parsed)
+                print_scan(parsed, app)
             except NmapParserException as e:
                 print("Exception raised while parsing scan: {0}".format(e.msg))
         return app
 
     def format_args(self):
-        ports = format_ports(scanner=self)
+        if self.ports:
+            ports = format_ports(scanner=self)
 
-        return self.args + " " + ports
-
+            return self.args + " " + ports
+        return self.args
 
 def format_ports(scanner):
     # Split on comma or hyphen
@@ -96,7 +99,7 @@ def format_ports(scanner):
 
 
 
-def print_scan(parsed):
+def print_scan(parsed, app):
     print_header("Results", " ")
     unix_timestamp = parsed.started
     start = datetime.fromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -105,29 +108,42 @@ def print_scan(parsed):
         parsed.version,
         start))
 
+    db = poll_db_status(app)
     for host in parsed.hosts:
+
         if len(host.hostnames):
             tmp_host = host.hostnames.pop()
         else:
             tmp_host = host.address
 
         if host.is_up():
+
+
+
             # Get OS
             if host.os_fingerprinted:
                 print("Host: {0} ({1})".format(tmp_host, host.os_match_probabilities()))
+                var = host.os_match_probabilities()
+
 
             print("\nHost {0}/{1} {2}.".format(tmp_host, host.address, host.status))
             print("   PORT    STATE         SERVICE")
 
+            serv: NmapService
             for serv in host.services:
-                pserv = "{0:>5s}/{1:3s}  {2:12s}  {3}".format(
-                    str(serv.port),
-                    serv.protocol,
-                    serv.state,
-                    serv.service)
-                if len(serv.banner):
-                    pserv += " ({0})".format(serv.banner)
-                print(pserv)
+                if serv.state == "open":
+                    pserv = "{0:>5s}/{1:3s}  {2:12s}  {3}".format(
+                        str(serv.port),
+                        serv.protocol,
+                        serv.state,
+                        serv.service)
+                    if len(serv.banner):
+                        pserv += " ({0})".format(serv.banner)
+                    print(pserv)
+            if db:
+                app = insert_host(app, host)
+
+
     print(parsed.summary)
     # @TODO add to database or file or something
     input("Press enter to continue")
