@@ -7,5 +7,7 @@ source venv/bin/activate
 # Run the script
 python3 main.py
 
+chmod +x setup.sh
+./setup.sh
 
 

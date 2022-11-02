@@ -1,5 +1,6 @@
 import os
 import random
+import fontawesome as fa
 
 
 def terminal_size():
@@ -11,7 +12,7 @@ def terminal_size():
     return columns, lines
 
 
-def print_header(message, sep='='):
+def print_header(message, sep='=', app=None):
     """
     Print a centered header message
     :return:
@@ -20,6 +21,9 @@ def print_header(message, sep='='):
     print(sep * columns)
     print(message.center(columns))
     print(sep * columns)
+    if app:
+        print(str(app).center(columns))
+        print(" " * columns)
 
 
 def clear():
@@ -52,14 +56,26 @@ def options(options: dict, text="Select", instructions="Select an option"):
             print("Invalid selection")
 
 
-def module_loaded(text, sep='-'):
+def module_loaded(text, sep='-', app=None):
     """
     Clear the screen and print a centered header message
+    :param app:
+    :param sep:
     :param text:
     :return:
     """
-    clear()
-    print_header(text, sep=sep)
+
+    # if an app is given with debug mode, do not clear the screen
+    if app and app.debug:
+        print_header("Clear Disabled on Debug Mode", "")
+        print_header(text, sep=sep, app=app)
+
+    else:
+        clear()
+        print_header(text, sep=sep, app=app)
+
+
+
 
 def vert_center(text):
     """
@@ -79,6 +95,15 @@ def vert_center(text):
     print(text)
     print("\n" * (lines // 2))
 
+
+def warn(text, centered=True):
+    """Print a warning message"""
+    text = f"{fa.icons['exclamation-triangle']} {text}"
+    if centered:
+        print_header(text, sep=' ')
+    else:
+        print(text)
+
 def exit_quote():
     """Print a random exit quote"""
     quotes = [
@@ -93,3 +118,4 @@ def exit_quote():
 
     vert_center(f"\n{random.choice(quotes)}")
     print_header("Goodbye", sep=' ')
+

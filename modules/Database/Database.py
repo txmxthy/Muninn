@@ -1,49 +1,43 @@
-import subprocess
-
-
+from pymetasploit3.msfrpc import MsfRpcClient
 from common.util import *
+from modules.Database import Db
+from modules.Scan.Scanner import Scanner
 
 
-def Controller():
-    module_loaded("Database")
-    actions = {"Configure": Configure, "Run": Run, "Init": init}
+def controller(app):
+    module_loaded("Database", app=app)
+
+    if not app.db_status:
+        warn("Database is not running")
+        actions = {"Init": Db.init, "Configure": Configure}
+        selection = options(actions, "Select", "Select an action")
+        if not selection:
+            return
+        selection(app)
+    else:
+        explore(app)
+
+    return app
+
+
+def Configure(app):
+    module_loaded("Configure DB" + fa.icons['cog'], app=app)
+
+    if input("Change the server settings? (y/n): ").lower() == "y":
+        for key in app.rpc:
+            if key is not "Client":
+                app.rpc[key] = input(f"{key}: {app.rpc[key]}:")
+
+    input("Press enter to continue")
+
+
+def explore(app):
+    actions = {"List Hosts": Db.list_hosts,
+               "Add Host":Db.add_host}
     selection = options(actions, "Select", "Select an action")
     if not selection:
         return
-    selection()
+    selection(app)
 
 
-def Configure():
-    print("Configure")
-    from pymetasploit3.msfrpc import MsfRpcClient
-    client = MsfRpcClient('yourpassword', port=55552, ssl=True)
-    mods = [m for m in dir(client) if not m.startswith('_')]
-    print(mods)
 
-
-    input("Press enter to continue")
-
-
-def Run():
-    print("Run")
-    input("Press enter to continue")
-
-def init():
-    """
-    Start the RPC server
-    :return:
-    """
-    # Msfconsole
-    #
-    # This will start the RPC server on port 55552 as well as the Metasploit console UI
-    #
-    # $ msfconsole
-    # msf> load msgrpc [Pass=yourpassword]
-
-    # Run command
-
-    # Spawn a new gnome shell
-    msf = subprocess.Popen(['gnome-terminal', '-e', 'msfconsole -q -x "load msgrpc Pass=yourpassword"'])
-
-
-    input("Press enter to continue")

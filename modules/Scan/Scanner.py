@@ -7,8 +7,9 @@ import fontawesome as fa
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 
-from common.util import print_header
+from common.util import *
 from common import eop
+
 
 # https://libnmap.readthedocs.io/en/latest/process.html
 # https://linux.die.net/man/1/nmap
@@ -20,11 +21,10 @@ class Scanner:
         self.ports = ports
         self.args = args
         self.safe_mode = safe_mode
-        self.known_hosts = {}
         self.current_command = "nmap " + self.hosts + " " + self.format_args()
 
-    def Configure(self):
-        print("Configure " + fa.icons['cog'])
+    def Configure(self, app):
+        module_loaded("Configure " + fa.icons['cog'], app=app)
 
         # Ports
         # --top-ports: Top
@@ -35,16 +35,22 @@ class Scanner:
         self.hosts = input("Hosts: ")
         self.ports = input("Ports: ")
         self.args = input("Args: ")
-        input("Press enter to continue")
-        return 1
 
-    def Run(self):
+        self.current_command = "nmap " + self.hosts + " " + self.format_args()
+        print("New Command: " + self.current_command)
+        input("Press enter to continue")
+        app.flag = 1
+        return app
+
+    def Run(self, app):
+
+        if not app.db_status:
+            warn("Database is not running!")
+
         args = self.format_args()  # @TODO
         print(fa.icons['spinner'] + " Running " + self.current_command)
 
         nmproc = NmapProcess(targets=self.hosts, options=args, safe_mode=self.safe_mode)
-
-
 
         nmproc.sudo_run_background()
 
@@ -53,29 +59,41 @@ class Scanner:
             while nmproc.is_running():
                 progress.update(int(float(nmproc.progress) - progress.n))
                 progress.refresh()
-                sleep(2)
+                sleep(1)
 
             try:
                 parsed = NmapParser.parse(nmproc.stdout)
                 print_scan(parsed)
             except NmapParserException as e:
                 print("Exception raised while parsing scan: {0}".format(e.msg))
+        return app
 
     def format_args(self):
         ports = format_ports(scanner=self)
+
         return self.args + " " + ports
 
 
 def format_ports(scanner):
-    if len(scanner.ports) == 2:
-        ports = str(scanner.ports[0]) + "-" + str(scanner.ports[1])
-    # If more than two ports, set as a comma separated list
-    elif len(scanner.ports) > 2:
-        ports = ",".join(scanner.ports)
-    # If only one port, set as a single port
-    else:
-        ports = str(scanner.ports[0])
-    return "-p " + ports
+    # Split on comma or hyphen
+
+    ports = scanner.ports
+
+    if isinstance(ports, str):
+        if "-" in ports:
+            ports = ports.split("-")
+            return "-p " + ports[0] + "-" + ports[1]
+        elif "," in ports:
+            ports = ports.split(",")
+            return "-p " + ",".join(ports)
+        else:
+            raise ValueError("Invalid port format")
+    elif isinstance(ports, int):
+        return "-p " + str(ports)
+    elif isinstance(ports, list):
+        ports = ",".join(str(x) for x in scanner.ports)
+        return "-p " + ports
+
 
 
 def print_scan(parsed):
@@ -97,8 +115,6 @@ def print_scan(parsed):
             # Get OS
             if host.os_fingerprinted:
                 print("Host: {0} ({1})".format(tmp_host, host.os_match_probabilities()))
-
-
 
             print("\nHost {0}/{1} {2}.".format(tmp_host, host.address, host.status))
             print("   PORT    STATE         SERVICE")
