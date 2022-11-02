@@ -71,7 +71,7 @@ def connect_db(app):
         # Run script
         os.system(script)
 
-
+    time.sleep(3)
     # Check cfg of server
     # os.system("cat /usr/share/metasploit-framework/config/database.yml")
     # Read password field from /usr/share/metasploit-framework/config/database.yml and set it to app.rpc["DbPass"]
@@ -100,9 +100,8 @@ def connect_db(app):
         print("Launching DB")
         try:
             app = connect(app)
+
             if "db" not in app.rpc["Client"].db.status:
-
-
                 newPort = int(app.db["DbPort"]) + 1
                 print("Port doesn't match config, retrying with port:", newPort)
                 print("Check against service and override if needed")
@@ -116,7 +115,6 @@ def connect_db(app):
         except Exception as e:
             app.error = e
             return app
-
 
         input("Press enter to continue")
 
