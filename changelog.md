@@ -35,3 +35,8 @@ v0.0.7 State management through app instance
 v0.0.8 Running DB & Error handling fixes
 ==========================
 - Added DB
+- 
+v0.0.9 DB Connected
+==========================
+- Very needlessly difficult
+- EOP affects DB - Integrated with scripts
