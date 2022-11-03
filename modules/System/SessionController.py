@@ -7,8 +7,6 @@ import fontawesome as fa
 from modules.System.Session import Runner
 
 
-
-
 def sid_logic(app, host):
     active: dict = ListSessions(app)
     active_sids = [int(key) for key in active.keys()]
@@ -46,36 +44,67 @@ def SessionController(app, exploited=None, sid=None):
 
     module_loaded("Session Controller" + ico, app=app)
     # app_sids, active_sids, not_active, not_found = sid_logic(app)
+    if isinstance(exploited, list):
+        sids = []
+        for host in exploited:
+            app, sid = get_sid_for_host(app, host, sid)
+            session, session_type = configure_for_runner(app, sid, exploited)
+            sids.append([sid, session, session_type])
 
-    if exploited:
-        found, app_sids, active_sids, not_active, not_found = sid_logic(app, exploited)
-
-        print(f"{fa.icons['check']} Found {len(found)} active sessions for {exploited}")
-
-        if sid is None:
-            app, sid = list_successful(app, exploited, found)
-
-        fullname = app.exploits[exploited][sid][0]
-        state = app.exploits[exploited][sid][1]
-        print(f"using Session {sid} with {fullname}")
-        app = Runner(app, sid)
-
-        return app
+        selection = Runner(app, sid, exploited)
+        for x in sids:
+            sid = x[0]
+            session = x[1]
+            session_type = x[2]
+            selection(app, session, sid, session_type, exploited)
 
     else:
-        if app.exploits == {}:
-            print(f"{fa.icons['exclamation-triangle']} No sessions/exploits recorded.")
-            input("Press enter to continue")
+
+        if exploited:
+            app, sid = get_sid_for_host(app, exploited, sid)
+            session, session_type = configure_for_runner(app, sid, exploited)
+            app = Runner(app, sid, exploited, session, session_type)
+
             return app
 
-        opts = {}
-        for host, body in app.exploits.keys(), app.exploits.values():
-            name = f"Host: {host}"
-            opts[name] = host
-        selection = options(opts, "Select", "Select a host")
-        if not selection:
-            return
-        app = SessionController(app, selection)
+        else:
+            if app.exploits == {}:
+                print(f"{fa.icons['exclamation-triangle']} No sessions/exploits recorded.")
+                input("Press enter to continue")
+                return app
+
+            opts = {}
+            for host in app.exploits.keys():
+                name = f"Host: {host}"
+                opts[name] = host
+            all = opts.values()
+            opts["All"] = all
+            selection = options(opts, "Select", "Select a host")
+            if not selection:
+                return
+            app = SessionController(app, selection)
 
     input("Press enter to continue")
     return app
+
+
+def configure_for_runner(app, sid, exploited):
+    sessions = ListSessions(app)
+    key = str(sid)
+    session_type = sessions[key]["type"]
+    session = app.rpc["Client"].sessions.session(key)
+    return session, session_type
+
+
+def get_sid_for_host(app, exploited, sid):
+    found, app_sids, active_sids, not_active, not_found = sid_logic(app, exploited)
+    print(f"{fa.icons['check']} Found {len(found)} active sessions for {exploited}")
+    if sid is None:
+        app, sid = list_successful(app, exploited, found)
+    fullname = app.exploits[exploited][sid][0]
+    state = app.exploits[exploited][sid][1]
+    for x in app.rpc:
+        print(x)
+    print(f"using Session {sid} with {fullname}")
+    input("Press enter to continue")
+    return app, sid

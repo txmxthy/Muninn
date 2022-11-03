@@ -6,8 +6,8 @@ from modules.Scan.Scanner import Scanner
 def controller(app, scanner=None):
     if scanner is None:
         module_loaded("New Scan", app=app)
-        # scanner = Scanner(hosts="192.168.86.66", args="-sV -O --osscan-limit --osscan-guess -F")
-        scanner = Scanner(hosts="192.168.86.66, 192.168.86.67, 127.0.0.1", args="-sV -O -p 1,445,50")
+        scanner = Scanner(hosts="192.168.86.66", args="-sV -O --osscan-limit --osscan-guess -F")
+        # scanner = Scanner(hosts="192.168.86.66, 192.168.86.67, 127.0.0.1", args="-sV -O -p 1,445,50")
         print("Default Command: " + scanner.current_command)
     else:
         module_loaded("Scan", app=app)

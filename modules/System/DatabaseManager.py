@@ -199,58 +199,13 @@ def host_icon(family):
     return icon
 
 
-def check_exploitable(app, host, service):
+def check_exploitable(app, service):
     """
     Check if vulnerabilities exist for the service on the host
     :param app:
     :param service:
     :return:
     """
-    # OPTIONS:
-    #
-    #     -h, --help                      Help banner
-    #     -I, --ignore                    Ignore the command if the only match has the same name as the search
-    #     -o, --output <filename>         Send output to a file in csv format
-    #     -r, --sort-descending <column>  Reverse the order of search results to descending order
-    #     -S, --filter <filter>           Regex pattern used to filter search results
-    #     -s, --sort-ascending <column>   Sort search results by the specified column in ascending order
-    #     -u, --use                       Use module if there is one result
-    #
-    # Keywords:
-    #   aka              :  Modules with a matching AKA (also-known-as) name
-    #   author           :  Modules written by this author
-    #   arch             :  Modules affecting this architecture
-    #   bid              :  Modules with a matching Bugtraq ID
-    #   cve              :  Modules with a matching CVE ID
-    #   edb              :  Modules with a matching Exploit-DB ID
-    #   check            :  Modules that support the 'check' method
-    #   date             :  Modules with a matching disclosure date
-    #   description      :  Modules with a matching description
-    #   fullname         :  Modules with a matching full name
-    #   mod_time         :  Modules with a matching modification date
-    #   name             :  Modules with a matching descriptive name
-    #   path             :  Modules with a matching path
-    #   platform         :  Modules affecting this platform
-    #   port             :  Modules with a matching port
-    #   rank             :  Modules with a matching rank (Can be descriptive (ex: 'good') or numeric with comparison operators (ex: 'gte400
-    #   ref              :  Modules with a matching ref
-    #   reference        :  Modules with a matching reference
-    #   target           :  Modules affecting this target
-    #   type             :  Modules of a specific type (exploit, payload, auxiliary, encoder, evasion, post, or nop)
-    #
-    # Supported search columns:
-    #   rank             :  Sort modules by their exploitabilty rank
-    #   date             :  Sort modules by their disclosure date. Alias for disclosure_date
-    #   disclosure_date  :  Sort modules by their disclosure date
-    #   name             :  Sort modules by their name
-    #   type             :  Sort modules by their type
-    #   check            :  Sort modules by whether or not they have a check method
-    #
-    # Examples:
-    #   search cve:2009 type:exploit
-    #   search cve:2009 type:exploit platform:-linux
-    #   search cve:2009 -s name
-    #   search type:exploit -s type -r
 
     queryA = service["name"] + " type:exploit"
     queryB = "port:" + str(service["port"]) + " type:exploit"
@@ -261,14 +216,9 @@ def check_exploitable(app, host, service):
 
     applicable = []
 
-    if not exploits:
-        return applicable
-    else:
-        # {'type': 'exploit', 'name': 'Centreon Web Useralias Command Execution', 'fullname':
-        # 'exploit/linux/http/centreon_useralias_exec', 'rank': 'excellent', 'disclosuredate': '2016-02-26'}
-        for exploit in exploits:
-            if host["name"].lower() in exploit["fullname"].lower() or host["name"].lower() in exploit["name"].lower():
-                applicable.append(exploit)
+    for exploit in exploits:
+        if service["name"].lower() in exploit["fullname"].lower() or service["name"].lower() in exploit["name"].lower():
+            applicable.append(exploit)
     return applicable
 
 
@@ -280,11 +230,12 @@ def services_by_host(app, exp, top_exploits):
         full = True
     else:
         full = False
+    print(f"Full Mode:" + str(full))
 
     services = app.rpc["Client"].db.workspaces.workspace('default').services.list
     for service in services:
         if service['host'] == exp['address']:
-            applicable = check_exploitable(app, exp, service)
+            applicable = check_exploitable(app, service)
 
             if applicable:
                 viability = fa.icons["exclamation"]
@@ -297,15 +248,11 @@ def services_by_host(app, exp, top_exploits):
                   f"{service['state']} on port "
                   f"{service['port']} using "
                   f"{service['proto']}")
-            if applicable and full:
-                if service['port'] not in [80, 443] and service['name'] not in ["http", "https"]:
+            if full:
+                if applicable:
                     for exploit in applicable:
-                        # Ignore 80 and 443
-
                         print(f"\t {exploit['name']} with rank {exploit['rank']}")
-                else:
-                    print("Software running on http/80/https/443 is not as easy to determine, "
-                          "prioritize other services")
+
 
     input("Press enter to continue")
     run_exploits(app, exp, top_exploits)
@@ -313,7 +260,6 @@ def services_by_host(app, exp, top_exploits):
 
 
 def run_exploits(app, exp, top_exploits):
-
     exploits = []
     print("Preset Selection: Demo Exploits: ")
     for expl in top_exploits:
