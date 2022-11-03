@@ -6,7 +6,7 @@ from libnmap.objects import NmapHost, NmapService
 from libnmap.objects.os import NmapOSClass, NmapOSMatch, NmapOSFingerprint
 import fontawesome as fa
 from tqdm import tqdm
-from modules.Database.Exploit import Exploit
+from modules.System.Exploit import Exploit
 # from common.deps.pymetasploit3
 from common.deps.pymetasploit3.msfrpc import ServicesTable, HostsTable, ModuleManager, ExploitModule
 from common.util import options

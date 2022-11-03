@@ -8,8 +8,8 @@ from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 from libnmap.objects import NmapHost, NmapService
 
-from modules.Database.Db import poll_db_status
-from modules.Database.manager import *
+from modules.System.Db import poll_db_status
+from modules.System.manager import *
 
 from common.util import *
 from common import eop
@@ -47,7 +47,7 @@ class Scanner:
     def Run(self, app):
 
         if not app.db_status:
-            warn("Database is not running!")
+            warn("System is not running!")
 
         args = self.format_args()  # @TODO
         print(fa.icons['spinner'] + " Running " + self.current_command)

@@ -1,11 +1,11 @@
 from common.util import *
-from modules.Database import Db
-from modules.Database.Db import poll_db_status
-from modules.Database.manager import host_icon, services_by_host, run_exploits
+from modules.System import Db
+from modules.System.Db import poll_db_status
+from modules.System.manager import host_icon, services_by_host, run_exploits
 
 
 def controller(app):
-    module_loaded("Database", app=app)
+    module_loaded("System", app=app)
 
     if not poll_db_status(app):
         warn("Database is not running")

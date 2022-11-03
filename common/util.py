@@ -1,6 +1,10 @@
 import os
 import random
+import time
+
 import fontawesome as fa
+
+from common.deps.pymetasploit3 import msfrpc
 
 
 def terminal_size():
@@ -119,3 +123,43 @@ def exit_quote():
     vert_center(f"\n{random.choice(quotes)}")
     print_header("Goodbye", sep=' ')
 
+
+def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout=301, runoptions=None):
+    """
+    Execute a module and wait for the returned data
+    Mandatory Arguments:
+    - mod : the MsfModule object
+    Optional Keyword Arguments:
+    - payload : the MsfModule object to be used as payload
+    """
+    options_str = ['use {}/{}'.format(mod.moduletype, mod.modulename)]
+    if console.is_busy():
+        raise msfrpc.MsfError('Console {} is busy'.format(console.cid))
+    console.read()  # clear data buffer
+    opts = runoptions.copy()
+    # if payload is None:
+    #     opts['DisablePayloadHandler'] = True
+
+    # Set module params
+    print(opts)
+    for k in opts.keys():
+        options_str.append('set {} {}'.format(k, opts[k]))
+
+    options_str.append('run -z')
+    if run_as_job:
+        options_str[-1] += " -j"
+    # options_str += "\n"
+    print(options_str)
+    for option in options_str:
+        console.write(option)
+        time.sleep(1)
+    # console.write(options_str)
+    data = ''
+    timer = 0
+    while data == '' or console.is_busy():
+        time.sleep(1)
+        data += console.read()['data']
+        timer += 1
+        if timer > timeout:
+            break
+    return data

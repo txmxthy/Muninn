@@ -1,7 +1,7 @@
 from common import eop
 from common.util import *
-from modules.Database import Database
-from modules.Database.Db import poll_db_status
+from modules.System import Database
+from modules.System.Db import poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
 import os
