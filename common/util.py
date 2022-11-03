@@ -79,8 +79,6 @@ def module_loaded(text, sep='-', app=None):
         print_header(text, sep=sep, app=app)
 
 
-
-
 def vert_center(text):
     """
     Space text at the center of the terminal vertically and horizontally
@@ -108,6 +106,7 @@ def warn(text, centered=True):
     else:
         print(text)
 
+
 def exit_quote():
     """Print a random exit quote"""
     quotes = [
@@ -124,7 +123,7 @@ def exit_quote():
     print_header("Goodbye", sep=' ')
 
 
-def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout=301, runoptions=None):
+def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout=301, app=None, runoptions=None):
     """
     Execute a module and wait for the returned data
     Mandatory Arguments:
@@ -153,6 +152,7 @@ def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout
     for option in options_str:
         console.write(option)
         time.sleep(1)
+
     # console.write(options_str)
     data = ''
     timer = 0
@@ -162,4 +162,8 @@ def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout
         timer += 1
         if timer > timeout:
             break
-    return data
+
+    lines = data.splitlines()
+    # Last line
+    lastline = lines[-1]
+    return data, lastline

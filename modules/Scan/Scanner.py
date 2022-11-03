@@ -8,8 +8,8 @@ from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser, NmapParserException
 from libnmap.objects import NmapHost, NmapService
 
-from modules.System.Db import poll_db_status
-from modules.System.manager import *
+from modules.System.DatabaseBridge import poll_db_status
+from modules.System.DatabaseManager import *
 
 from common.util import *
 from common import eop

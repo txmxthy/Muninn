@@ -1,7 +1,7 @@
 from common.util import *
-from modules.System import Db
-from modules.System.Db import poll_db_status
-from modules.System.manager import host_icon, services_by_host, run_exploits
+from modules.System import DatabaseBridge
+from modules.System.DatabaseBridge import poll_db_status
+from modules.System.DatabaseManager import host_icon, services_by_host, run_exploits
 
 
 def controller(app):
@@ -9,7 +9,7 @@ def controller(app):
 
     if not poll_db_status(app):
         warn("Database is not running")
-        actions = {"Init": Db.init, "Configure": Configure}
+        actions = {"Init": DatabaseBridge.init, "Configure": Configure}
         selection = options(actions, "Select", "Select an action")
         if not selection:
             return

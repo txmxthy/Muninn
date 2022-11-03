@@ -1,7 +1,7 @@
 from common import eop
 from common.util import *
-from modules.System import Database
-from modules.System.Db import poll_db_status
+from modules.System import Database, Exploit, Controller
+from modules.System.DatabaseBridge import poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
 import os
@@ -44,6 +44,7 @@ class App:
                     "User": "msf",
                     }
         self.db = {}
+        self.exploits = {}
 
     def __repr__(self):
         self.db_status = poll_db_status(self)
@@ -72,6 +73,7 @@ class App:
             opts = {"Setup": auto_setup,
                     "Scanner": Scan.controller,
                     "System": Database.controller,
+                    "Sessions": Controller.Controller,
                     "Toggle Debug": self.toggle_debug,
                     "Error Demo": Scan.Scanner.format_args}
             selection = options(opts, "Select")
@@ -96,5 +98,5 @@ def auto_setup(app):
     :return:
     """
     print("Auto setup")
-    Database.Db.init(app)
+    Database.DatabaseBridge.init(app)
     return app
