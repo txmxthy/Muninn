@@ -1,8 +1,7 @@
-
 from common.util import *
 from modules.Database import Db
 from modules.Database.Db import poll_db_status
-from modules.Database.manager import host_icon, services_by_host
+from modules.Database.manager import host_icon, services_by_host, run_exploits
 
 
 def controller(app):
@@ -32,8 +31,11 @@ def Configure(app):
     input("Press enter to continue")
 
 
-
 def explore(app):
+    top_exploits = ["exploit/windows/smb/ms17_010_eternalblue",
+                    "exploit/windows/smb/ms17_010_psexec",
+                    "exploit/windows/postgres/postgres_payload"]
+
     module_loaded("Explore " + fa.icons['database'], app=app)
 
     hosts = app.rpc["Client"].db.workspaces.workspace('default').hosts.list
@@ -43,11 +45,16 @@ def explore(app):
         name = (f"{host_icon(host['name'])} {host['os_name']} at {host['address']}")
         actions[name] = host
 
-
     selection = options(actions, "Select", "Select an action")
     if not selection:
         return
-    services_by_host(app, selection)
 
-    # services_by_host(app, host)
-    input("Press enter to continue")
+    print("explore or exploit?")
+    opts = {"Explore": services_by_host, "Exploit": run_exploits}
+    Mode = options(opts, "Mode", "Select Mode")
+
+    if not Mode:
+        return
+
+    Mode(app, selection, top_exploits)
+

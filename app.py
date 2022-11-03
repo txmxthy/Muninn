@@ -1,7 +1,6 @@
 from common import eop
 from common.util import *
 from modules.Database import Database
-from modules import Bots
 from modules.Database.Db import poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
@@ -70,10 +69,9 @@ class App:
             eop.root()
 
         while True:
-            opts = {"Auto Setup": auto_setup,
+            opts = {"Setup": auto_setup,
                     "Scanner": Scan.controller,
-                    "Database": Database.controller,
-                    "Bots": Bots.controller,
+                    "System": Database.controller,
                     "Toggle Debug": self.toggle_debug,
                     "Error Demo": Scan.Scanner.format_args}
             selection = options(opts, "Select")

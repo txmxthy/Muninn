@@ -6,9 +6,10 @@ from libnmap.objects import NmapHost, NmapService
 from libnmap.objects.os import NmapOSClass, NmapOSMatch, NmapOSFingerprint
 import fontawesome as fa
 from tqdm import tqdm
-
+from modules.Database.Exploit import Exploit
 # from common.deps.pymetasploit3
 from common.deps.pymetasploit3.msfrpc import ServicesTable, HostsTable, ModuleManager, ExploitModule
+from common.util import options
 
 
 def host_in_db(app, host):
@@ -30,7 +31,7 @@ def insert_services(app, host, services):
     :return:
     """
     # Tqdm progress bar
-    pbar = tqdm.tqdm(total=len(services), desc="Inserting services into database...", unit="services")
+    pbar = tqdm(total=len(services), desc="Inserting services into database...", unit="services")
     for service in services:
         pbar.update(1)
 
@@ -46,11 +47,13 @@ def insert_services(app, host, services):
         #         - name : the application layer protocol (e.g. ssh, mssql, smb)
         #         - sname : an alias for the above
         #         """
+        # @TODO CPElist migration
         x: ServicesTable = app.rpc["Client"].db.workspaces.workspace('default').services.report(host=host,
                                                                                                 port=service["port"],
                                                                                                 proto=service["proto"],
                                                                                                 state=service["state"],
                                                                                                 name=service["name"])
+        # sname=service["banner"])
     return app
 
 
@@ -62,26 +65,63 @@ def insert_host(app, host: NmapHost):
 
         os: list[NmapOSMatch] = host.os.osmatches
 
-        best_os = {}
-        best_accuracy = 0
+        best_os = {
+            "vendor": None,
+            "osfamily": None,
+            "osgen": None,
+            "accuracy": None,
+            "type": None,
+            "cpe": None,
+            "os_name": None,
+        }
+
+        vendors = []
+        osfamilies = []
+        osgens = []
+        accuracies = []
+        types = []
+
         x: NmapOSMatch
         for x in os:
             c: list[NmapOSClass] = x.osclasses
             y: NmapOSClass
             for y in c:
-                if y.accuracy > best_accuracy:
-                    best_os = {
-                        "vendor": y.vendor,
-                        "osfamily": y.osfamily,
-                        "osgen": y.osgen,
-                        "accuracy": y.accuracy,
-                        "type": y.type
-                    }
-                elif y.accuracy == best_accuracy:
-                    best_os["osgen"] = best_os["osgen"] + " or " + y.osgen
+                vendors.append(y.vendor)
+                osfamilies.append(y.osfamily)
+                osgens.append(y.osgen)
+                accuracies.append(y.accuracy)
+                types.append(y.type)
+
+        # Set family to most common
+        family = max(set(osfamilies), key=osfamilies.count).lower()
+
+        Windows = ['7', '2008', '8', '8.1']
+        Linux = ['Ubuntu', 'Debian', 'CentOS', 'Fedora', 'Red Hat', 'SUSE', 'Gentoo', 'Arch', 'Slackware', 'Mandriva']
+        Mac = ['OS X']
+
+        priority = {
+            "windows": Windows,
+            "linux": Linux,
+            "mac": Mac
+        }
+        # Priority
+
+        # Use lowest index gen possible
+        gen = None
+        for i, x in enumerate(priority[family]):
+
+            if x in osgens:
+                best_os["vendor"] = vendors[i]
+                best_os["osfamily"] = osfamilies[i]
+                best_os["osgen"] = osgens[i]
+                best_os["accuracy"] = accuracies[i]
+                best_os["type"] = types[i]
+                best_os["os_name"] = str(osfamilies[i]) + " " + osgens[i]
+                break
+            break
 
         # Insert host
-        print("Inserting host into database...")
+
         #  Mandatory Keyword Arguments:
         #         - host : an IP address or Host object reference.
         #
@@ -101,9 +141,8 @@ def insert_host(app, host: NmapHost):
         # 'Unknown', 'os_flavor': '', 'os_sp': '', 'os_lang': '', 'updated_at': 1667409307, 'purpose': 'device',
         # 'info': ''}
 
-        os_name = best_os["osfamily"] + " " + best_os["osgen"],
         x: HostsTable = app.rpc["Client"].db.workspaces.workspace('default').hosts.report(host=addr,
-                                                                                          os_name=os_name,
+                                                                                          os_name=best_os["os_name"],
                                                                                           name=best_os["osfamily"],
                                                                                           os_flavor=best_os["osgen"],
                                                                                           info="")
@@ -124,8 +163,6 @@ def insert_host(app, host: NmapHost):
                 cpe['update'] = service.cpelist[0].get_update()
                 cpe['edition'] = service.cpelist[0].get_edition()
                 cpe['language'] = service.cpelist[0].get_language()
-                print(cpe)
-                input("checked")
             if service.state == "open":
                 proto = service.protocol
                 port = service.port
@@ -137,8 +174,7 @@ def insert_host(app, host: NmapHost):
                                  "state": state,
                                  "cpe": cpe,
                                  "banner": banner})
-        print("Inserting services into database...")
-        print(services)
+
         insert_services(app, addr, services)
         return app
     else:
@@ -217,7 +253,7 @@ def check_exploitable(app, host, service):
     #   search type:exploit -s type -r
 
     queryA = service["name"] + " type:exploit"
-    queryB = "port:" + str(service["port"])+ " type:exploit"
+    queryB = "port:" + str(service["port"]) + " type:exploit"
 
     exploitA: list = app.rpc["Client"].modules.search(match=queryA)
     exploitB: list = app.rpc["Client"].modules.search(match=queryB)
@@ -231,16 +267,24 @@ def check_exploitable(app, host, service):
         # {'type': 'exploit', 'name': 'Centreon Web Useralias Command Execution', 'fullname':
         # 'exploit/linux/http/centreon_useralias_exec', 'rank': 'excellent', 'disclosuredate': '2016-02-26'}
         for exploit in exploits:
-            if host["name"].lower() in exploit["fullname"].lower() or host["os"].lower() in exploit["name"].lower():
+            if host["name"].lower() in exploit["fullname"].lower() or host["name"].lower() in exploit["name"].lower():
                 applicable.append(exploit)
     return applicable
 
 
-def services_by_host(app, host):
+def services_by_host(app, exp, top_exploits):
+    # ask if user wants to list vulns in services matching scan from db
+
+    choice = input("List vulnerabilities in services matching scan? [y/N] ").lower()
+    if choice == "y":
+        full = True
+    else:
+        full = False
+
     services = app.rpc["Client"].db.workspaces.workspace('default').services.list
     for service in services:
-        if service['host'] == host['address']:
-            applicable = check_exploitable(app, host, service)
+        if service['host'] == exp['address']:
+            applicable = check_exploitable(app, exp, service)
 
             if applicable:
                 viability = fa.icons["exclamation"]
@@ -253,12 +297,36 @@ def services_by_host(app, host):
                   f"{service['state']} on port "
                   f"{service['port']} using "
                   f"{service['proto']}")
-            if applicable:
+            if applicable and full:
                 if service['port'] not in [80, 443] and service['name'] not in ["http", "https"]:
                     for exploit in applicable:
                         # Ignore 80 and 443
 
-                            print(f"\t {exploit['name']} with rank {exploit['rank']}")
+                        print(f"\t {exploit['name']} with rank {exploit['rank']}")
                 else:
                     print("Software running on http/80/https/443 is not as easy to determine, "
                           "prioritize other services")
+    run_exploits(app, exp, top_exploits)
+    return app
+
+
+def run_exploits(app, exp, top_exploits):
+
+    exploits = []
+    print("Preset Selection: Demo Exploits: ")
+    for expl in top_exploits:
+        res = app.rpc["Client"].modules.search(match=expl + " type:exploit")
+        exploits.append(res)
+
+    actions = {}
+    for i, expl in enumerate(exploits):
+        target = expl[0]
+        name = f"{target['name']}, Ranked: {target['rank']}"
+        actions[name] = target
+
+    selection = options(actions, "Select", "Select an exploit to use: ")
+    if not selection:
+        return app
+    if selection:
+        Exploit(app, selection, exp)
+    return app
