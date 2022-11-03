@@ -1,6 +1,6 @@
 from common import eop
 from common.util import *
-from modules.System import Database, Exploit, Controller
+from modules.System import Database, Exploit, SessionController
 from modules.System.DatabaseBridge import poll_db_status
 from modules.Scan import Scan
 import fontawesome as fa
@@ -17,7 +17,7 @@ def handle_error(app):
     print_header(str(app.error), sep=" ")
     app.error = "Caught"
 
-    if app.debug:
+    if app.debug or True: #Turning this always on cause its helpful
         # Dump fields
         print("Dumping Fields")
         for field in app.__dict__:
@@ -73,7 +73,7 @@ class App:
             opts = {"Setup": auto_setup,
                     "Scanner": Scan.controller,
                     "System": Database.controller,
-                    "Sessions": Controller.Controller,
+                    "Sessions": SessionController.SessionController,
                     "Toggle Debug": self.toggle_debug,
                     "Error Demo": Scan.Scanner.format_args}
             selection = options(opts, "Select")

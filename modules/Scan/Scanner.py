@@ -137,7 +137,12 @@ def print_scan(parsed, app):
                         pserv += " ({0})".format(serv.banner)
                     print(pserv)
             if db:
-                app = insert_host(app, host)
+                if "windows" in str(host.os_match_probabilities()).lower():
+                    app = insert_host(app, host)
+                else:
+                    print("Ignoring Non Win host: " + host.address)
+                    input("Press enter to continue")
+
 
     print(parsed.summary)
     # @TODO add to database or file or something

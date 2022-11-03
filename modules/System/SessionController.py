@@ -1,18 +1,12 @@
 from typing import Any
 
 from common.deps.pymetasploit3.msfrpc import MsfRpcClient, SessionManager
-from common.util import module_loaded, print_header, options
+from common.util import module_loaded, print_header, options, ListSessions
 import fontawesome as fa
 
+from modules.System.Session import Runner
 
-def ListSessions(app):
-    """"
-    List active sessions
-    """
-    app.rpc["Client"]: MsfRpcClient
-    manager: SessionManager = app.rpc["Client"].sessions
-    sessions: dict = manager.list
-    return sessions
+
 
 
 def sid_logic(app, host):
@@ -40,7 +34,7 @@ def list_successful(app, host, found):
     return app, selection
 
 
-def Controller(app, exploited=None, sid=None):
+def SessionController(app, exploited=None, sid=None):
     """"
     Activate meterpreter sessions and control system
     """
@@ -64,14 +58,15 @@ def Controller(app, exploited=None, sid=None):
         fullname = app.exploits[exploited][sid][0]
         state = app.exploits[exploited][sid][1]
         print(f"using Session {sid} with {fullname}")
-
+        app = Runner(app, sid)
 
         return app
 
     else:
         if app.exploits == {}:
-            print(f"{fa.icons['exclamation-triangle']} No sessions recorded.")
-            return
+            print(f"{fa.icons['exclamation-triangle']} No sessions/exploits recorded.")
+            input("Press enter to continue")
+            return app
 
         opts = {}
         for host, body in app.exploits.keys(), app.exploits.values():
@@ -80,7 +75,7 @@ def Controller(app, exploited=None, sid=None):
         selection = options(opts, "Select", "Select a host")
         if not selection:
             return
-        app = Controller(app, selection)
+        app = SessionController(app, selection)
 
     input("Press enter to continue")
     return app

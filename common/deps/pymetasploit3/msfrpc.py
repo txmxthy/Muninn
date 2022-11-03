@@ -10,6 +10,8 @@ import random
 import msgpack
 import urllib3
 from retry import retry
+from tqdm import tqdm
+
 requests.packages.urllib3.disable_warnings()
 
 __all__ = [
@@ -1925,7 +1927,9 @@ class MeterpreterSession(MsfSession):
         Wait for session command to get all output.
         """
         counter = 1
+        pbar = tqdm(total=timeout)
         while counter < timeout:
+
             out += self.read()
             if end_strs == None:
                 if len(out) > 0:
@@ -1934,6 +1938,7 @@ class MeterpreterSession(MsfSession):
                 if any(end_str in out for end_str in end_strs):
                     return out
             time.sleep(1)
+            pbar.update(1)
             counter += 1
 
         if timeout_exception:

@@ -9,7 +9,7 @@ from tqdm import tqdm
 from modules.System.Exploit import Exploit
 # from common.deps.pymetasploit3
 from common.deps.pymetasploit3.msfrpc import ServicesTable, HostsTable, ModuleManager, ExploitModule
-from common.util import options
+from common.util import options, module_loaded
 
 
 def host_in_db(app, host):
@@ -306,6 +306,8 @@ def services_by_host(app, exp, top_exploits):
                 else:
                     print("Software running on http/80/https/443 is not as easy to determine, "
                           "prioritize other services")
+
+    input("Press enter to continue")
     run_exploits(app, exp, top_exploits)
     return app
 
@@ -323,7 +325,7 @@ def run_exploits(app, exp, top_exploits):
         target = expl[0]
         name = f"{target['name']}, Ranked: {target['rank']}"
         actions[name] = target
-
+    module_loaded("Exploits " + fa.icons["rocket"], app=app)
     selection = options(actions, "Select", "Select an exploit to use: ")
     if not selection:
         return app

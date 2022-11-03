@@ -33,7 +33,7 @@ def Configure(app):
 
 def explore(app):
     top_exploits = ["exploit/windows/smb/ms17_010_eternalblue",
-                    "exploit/windows/smb/ms17_010_psexec",
+                    "windows/iis/iis_webdav_upload_asp",
                     "exploit/windows/postgres/postgres_payload"]
 
     module_loaded("Explore " + fa.icons['database'], app=app)
@@ -56,5 +56,5 @@ def explore(app):
     if not Mode:
         return
 
-    Mode(app, selection, top_exploits)
-
+    app = Mode(app, selection, top_exploits)
+    return app

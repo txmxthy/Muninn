@@ -125,7 +125,6 @@ def init(app):
     print("Client Connected")
 
     app = connect_db(app)
-    print(app.rpc["Client"].db.workspaces.list)
-    print(app.rpc["Client"].sessions.list)
+
 
     return app

@@ -5,6 +5,7 @@ import time
 import fontawesome as fa
 
 from common.deps.pymetasploit3 import msfrpc
+from common.deps.pymetasploit3.msfrpc import MsfRpcClient, SessionManager
 
 
 def terminal_size():
@@ -167,3 +168,12 @@ def run_module_with_output(console, mod, payload=None, run_as_job=False, timeout
     # Last line
     lastline = lines[-1]
     return data, lastline
+
+def ListSessions(app):
+    """"
+    List active sessions
+    """
+    app.rpc["Client"]: MsfRpcClient
+    manager: SessionManager = app.rpc["Client"].sessions
+    sessions: dict = manager.list
+    return sessions
