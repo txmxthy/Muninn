@@ -39,13 +39,14 @@ database. Users can also customize their own exploit flows, enhancing Muninn's f
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(4).png" alt="Remote Control" width="600"/>
-  <br><i>Remote Control</i>
-</p>
-
-<p align="center">
   <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(5).png" alt="Browse Remotes" width="600"/>
   <br><i>Browse Remotes</i>
+</p>
+
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(4).png" alt="Remote Control" width="600"/>
+  <br><i>Remote Control</i>
 </p>
 
 ### Notes
