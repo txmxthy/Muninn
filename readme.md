@@ -27,7 +27,35 @@ Muninn is not just a tool; it’s your vigilant guardian, offering powerful, aut
 capabilities.
 
 ### Media
+Muninn is not just a tool; it’s your vigilant guardian, offering powerful, automated, and customizable cybersecurity capabilities.
 
+### Media
+Muninn is not just a tool; it’s your vigilant guardian, offering powerful, automated, and customizable cybersecurity capabilities.
+### Media
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(1).png" alt="DB Launch/Integration" width="600"/>
+  <br><i>DB Launch/Integration</i>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(2).png" alt="Scan Results" width="600"/>
+  <br><i>Scan Results</i>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(3).png" alt="Running Exploits" width="600"/>
+  <br><i>Running Exploits</i>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(4).png" alt="Remote Control" width="600"/>
+  <br><i>Remote Control</i>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(5).png" alt="Browse Remotes" width="600"/>
+  <br><i>Browse Remotes</i>
+</p>
 
 ### Notes
 This project was as a PoC in a very short timespan. It is incomplete and in its "experimental" development phase. 
