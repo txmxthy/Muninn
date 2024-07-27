@@ -16,21 +16,12 @@ database. Users can also customize their own exploit flows, enhancing Muninn's f
 #### Key Features:
 - **Network Scanning:** Discovers and identifies all hosts on the network.
 - **Vulnerability Assessment:** Scans for open ports and potential vulnerabilities.
-- **Exploit Matching:** Automatically matches vulnerabilities to available exploits, including pre-configured flows like 
-- EternalBlue.
+- **Exploit Matching:** Automatically matches vulnerabilities to available exploits, including pre-configured flows like EternalBlue.
 - **Custom Exploit Flows:** Allows users to define and implement their own frequently used exploits.
 - **Privilege Escalation:** After a successful exploit, Muninn can elevate privileges to gain full administrative access.
 - **Reverse Shell Access:** Provides a reverse shell for direct control over compromised systems.
 - **Built-In Utilities:** Features for uploading/downloading files, taking screenshots, shutting down systems, and more.
 
-Muninn is not just a tool; it’s your vigilant guardian, offering powerful, automated, and customizable cybersecurity 
-capabilities.
-
-### Media
-Muninn is not just a tool; it’s your vigilant guardian, offering powerful, automated, and customizable cybersecurity capabilities.
-
-### Media
-Muninn is not just a tool; it’s your vigilant guardian, offering powerful, automated, and customizable cybersecurity capabilities.
 ### Media
 <p align="center">
   <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Reference/media%20(1).png" alt="DB Launch/Integration" width="600"/>
