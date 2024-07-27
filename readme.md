@@ -5,7 +5,7 @@ to the god Odin._
 
 ## Muninn - Your All-Seeing Cybersecurity Sentinel
 
-Muninn is an end-to-end cybersecurity tool which integrate with Metasploit and Nmap.
+Muninn is an end-to-end cybersecurity tool which integrates with Metasploit and Nmap.
 
 ### What Muninn Does
 
