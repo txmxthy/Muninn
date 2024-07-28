@@ -1,11 +1,25 @@
-![Logo Banner](https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Munnin%20Logos/repository-open-graph-logo.png)
 
-_In Norse mythology, Huginn and Muninn are a pair of ravens that fly all over the world, Midgard, and bring information 
-to the god Odin._
+<h3 align="center">
+  <img src="https://raw.githubusercontent.com/txmxthy/Muninn/main/media/Munnin%20Logos/repository-open-graph-logo.png" alt="Logo" style="width:400px; height:auto;">
+</h3>
 
-## Muninn - Your All-Seeing Cybersecurity Sentinel
 
-Muninn is an end-to-end cybersecurity tool which integrates with Metasploit and Nmap.
+<h5 align="center"> 
+    In Norse mythology, Huginn and Muninn are a pair of ravens that fly all over the world, Midgard, and bring information 
+to the god Odin
+</h5>
+
+<br>
+
+
+<h2 align="center"> 
+    About Muninn
+</h2>
+
+<h4 align="center"> 
+    Muninn is an end-to-end cybersecurity tool which integrates with Metasploit and Nmap.
+
+</h4>
 
 ### What Muninn Does
 
